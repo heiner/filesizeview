@@ -7,10 +7,17 @@
 
 Original author (early 2000s): [@mkuettler](https://github.com/mkuettler).
 
-![Screenshot](screenshot.png)
+![Screenshot](https://github.com/heiner/filesizeview/blob/master/screenshot.png)
 
 Usage:
 
 ```sh
 $ python filesizeview.py path/to/large/dir
+```
+
+Or:
+
+```sh
+pip install filesizeview
+filesizeview path/to/large/dir
 ```
