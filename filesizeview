@@ -8,14 +8,15 @@ import curses
 import math
 import optparse
 import os
+import subprocess
 import sys
 
 
 DU_COMMAND = "du -ab"
 
 if sys.platform == "darwin":
-    # Default `du` on MacOS isn't compatible with this script, use
-    # GNU du (gdu) instead.
+    # Default `du` on MacOS doesn't have the -b option.
+    # Use GNU du (gdu) instead.
     DU_COMMAND = "g" + DU_COMMAND
 
 
@@ -358,12 +359,10 @@ class fsvViewer:
         os.chdir(d)
         self._msgwin.addstr(0, 0, "please wait while the sizes are calculated...")
         self._msgwin.refresh()
-        try:
-            sizefile = os.popen(DU_COMMAND, "r")
-            self._parent_dir = self.create_tree(sizefile, sys.argv[1])
-        finally:
-            if not sizefile.closed:
-                sizefile.close()
+        with subprocess.Popen(
+            DU_COMMAND.split(), stdout=subprocess.PIPE, close_fds=True, text=True
+        ) as du:
+            self._parent_dir = self.create_tree(du.stdout, sys.argv[1])
         maxyx = self._mainwin.getmaxyx()
         win = self._mainwin.derwin(maxyx[0] - 1, maxyx[1], 0, 0)
         win.bkgdset(" ", curses.color_pair(0))
