@@ -2,7 +2,7 @@
 
 # A program to display the contents of a directory as rectangles
 # with sizes according to the files sizes. It is supposed to work
-# like konquerors "File Size View", but it uses curses.
+# like Konqueror's "File Size View", but it uses curses.
 
 import curses
 import math
