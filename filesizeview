@@ -295,51 +295,49 @@ class fsvViewer:
                 ch = self._mainwin.getch()
             except KeyboardInterrupt:
                 break
-            if ch < 256:
-                ch = chr(ch)
-                if ch in "qQ":
-                    break
-                elif ch in "fF":
-                    self._mainwin.clear()
-                    self._draw_frame = not self._draw_frame
-                    self._parent_dir.calculate_content(0, self._draw_frame)
-                    self.set_cursor(0, 0)
-                    self._mainwin.refresh()
-                elif ch in "rR":
-                    self.load_dir(self._dir)
-                    while not self._parent_dir:
-                        ch = self._mainwin.getch()
-                        if ch < 256:
-                            ch = chr(ch)
-                            if ch in "qQ":
-                                return
-                            elif ch in "rR":
-                                self.load_dir(self._dir)
-                    self._selected_path = [self._parent_dir]
-                    self._path_index = 0
-                    self.set_cursor(0, 0)
+            if ch == ord("q"):
+                break
+            elif ch == ord("f"):
+                self._mainwin.clear()
+                self._draw_frame = not self._draw_frame
+                self._parent_dir.calculate_content(0, self._draw_frame)
+                self.set_cursor(0, 0)
+                self._mainwin.refresh()
+            elif ch == ord("r"):
+                self.load_dir(self._dir)
+                while not self._parent_dir:
+                    ch = self._mainwin.getch()
+                    if ch < 256:
+                        ch = chr(ch)
+                        if ch in "qQ":
+                            return
+                        elif ch in "rR":
+                            self.load_dir(self._dir)
+                self._selected_path = [self._parent_dir]
+                self._path_index = 0
+                self.set_cursor(0, 0)
+                self.write_path()
+            elif ch == ord("d"):
+                if self._path_index > 0:
+                    self._path_index -= 1
                     self.write_path()
-                elif ch in "dD":
-                    if self._path_index > 0:
-                        self._path_index -= 1
-                        self.write_path()
-                elif ch in "eE":
-                    if self._path_index < len(self._selected_path) - 1:
-                        self._path_index += 1
-                        self.write_path()
-            elif ch == curses.KEY_UP:
+            elif ch == ord("e"):
+                if self._path_index < len(self._selected_path) - 1:
+                    self._path_index += 1
+                    self.write_path()
+            elif ch == curses.KEY_UP or ch == ord("k"):
                 y, x = self._mainwin.getyx()
                 if y > 0:
                     self.set_cursor(y - 1, x)
-            elif ch == curses.KEY_DOWN:
+            elif ch == curses.KEY_DOWN or ch == ord("j"):
                 y, x = self._mainwin.getyx()
                 if y + 1 < self._mainwin.getmaxyx()[0] - 1:
                     self.set_cursor(y + 1, x)
-            elif ch == curses.KEY_LEFT:
+            elif ch == curses.KEY_LEFT or ch == ord("h"):
                 y, x = self._mainwin.getyx()
                 if x > 0:
                     self.set_cursor(y, x - 1)
-            elif ch == curses.KEY_RIGHT:
+            elif ch == curses.KEY_RIGHT or ch == ord("l"):
                 y, x = self._mainwin.getyx()
                 if x + 1 < self._mainwin.getmaxyx()[1]:
                     self.set_cursor(y, x + 1)
