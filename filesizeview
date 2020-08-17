@@ -4,14 +4,11 @@
 # with sizes according to the files sizes. It is supposed to work
 # like konquerors "File Size View", but it uses curses.
 
+import curses
 import math
+import optparse
 import os
 import sys
-
-from optparse import OptionParser
-from functools import reduce
-
-import curses
 
 
 def increase_n_highest(numbers, n):
@@ -113,7 +110,7 @@ class fsvDirectory(fsvFile):
 
     def set_files(self, files):
         self._files = files
-        self._size = reduce(lambda s, f: s + f.size(), files, 0)
+        self._size = sum(f.size() for f in files)
 
     def setup(self):
         self._files.sort(key=lambda f: f.size(), reverse=True)
@@ -285,7 +282,10 @@ class fsvViewer:
         self.write_path()
         self.set_cursor(0, 0)
         while True:
-            ch = self._mainwin.getch()
+            try:
+                ch = self._mainwin.getch()
+            except KeyboardInterrupt:
+                break
             if ch < 256:
                 ch = chr(ch)
                 if ch in "qQ":
@@ -442,7 +442,9 @@ class fsvViewer:
         return current_dirs[0]
 
 
-parser = OptionParser(usage="usage: %prog [options] <directory>", version="%proc 0.9")
+parser = optparse.OptionParser(
+    usage="usage: %prog [options] <directory>", version="%proc 0.9"
+)
 parser.add_option(
     "-f",
     "--draw-frame",
@@ -458,17 +460,24 @@ parser.add_option(
     dest="draw_frames",
     help="draw no frames to around directories",
 )
-# set usage
-(options, args) = parser.parse_args()
-if len(args) != 1:
-    parser.print_usage()
-    sys.exit(1)
-if not os.path.isdir(args[0]):
-    print("invalid directory: " + args[0])
-    sys.exit(1)
 
-try:
-    curses.wrapper(fsvViewer, args[0], options.draw_frames)
-except fsvError:
-    print(str(sys.exc_info()[1]))
-    sys.exit(2)
+
+def main():
+    # set usage
+    (options, args) = parser.parse_args()
+    if len(args) != 1:
+        parser.print_usage()
+        sys.exit(1)
+    if not os.path.isdir(args[0]):
+        print("invalid directory: " + args[0])
+        sys.exit(1)
+
+    try:
+        curses.wrapper(fsvViewer, args[0], options.draw_frames)
+    except fsvError:
+        print(str(sys.exc_info()[1]))
+        sys.exit(2)
+
+
+if __name__ == "__main__":
+    main()
