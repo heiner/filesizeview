@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 # A program to display the contents of a directory as rectangles
 # with sizes according to the files sizes. It is supposed to work
@@ -6,6 +6,7 @@
 
 import os, sys, math, curses
 from optparse import OptionParser
+from functools import reduce
 
 def increase_n_highest(l, n):
     indices = [-1]*(n)
@@ -104,7 +105,7 @@ class fsvDirectory(fsvFile):
         self._size = reduce(lambda s, f: s+f.size(), files, 0)
 
     def setup(self):
-        self._files.sort(lambda a, b: -cmp(a.size(), b.size()))
+        self._files.sort(key=lambda f: f.size(), reverse=True)
 
     def calculate_content(self, color, draw_frame = True):
         if draw_frame:
@@ -146,13 +147,13 @@ class fsvDirectory(fsvFile):
                 continue
             widths = []
             sum_width = 0
-            for j in xrange(start, end):
+            for j in range(start, end):
                 w = self._files[j].size()*size_fac/exact_heights[i]
                 widths.append(w)
                 sum_width += int(math.floor(w))
             widths = increase_n_highest(widths, w_width-sum_width)
             sum_width = self.frame_size[1]*draw_frame
-            for j in xrange(start, end):
+            for j in range(start, end):
                 if not widths[j-start]:
                     continue
                 color += 1
@@ -429,11 +430,11 @@ if len(args) != 1:
     parser.print_usage()
     sys.exit(1)
 if not os.path.isdir(args[0]):
-    print "invalid directory: "+args[0]
+    print("invalid directory: "+args[0])
     sys.exit(1)
 
 try:
     curses.wrapper(fsvViewer, args[0], options.draw_frames)
 except fsvError:
-    print str(sys.exc_info()[1])
+    print(str(sys.exc_info()[1]))
     sys.exit(2)
