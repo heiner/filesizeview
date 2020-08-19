@@ -25,6 +25,7 @@ if sys.platform == "darwin":
         DU_COMMAND = "du -a"
         BLOCKSIZE = 512
     else:
+        # gdu is installed. Let's use it.
         DU_COMMAND = "g" + DU_COMMAND
 
 
@@ -299,10 +300,7 @@ class fsvViewer:
         self.write_path()
         self.set_cursor(0, 0)
         while True:
-            try:
-                ch = self._mainwin.getch()
-            except KeyboardInterrupt:
-                break
+            ch = self._mainwin.getch()
             if ch == ord("q"):
                 break
             elif ch == ord("f"):
@@ -368,7 +366,7 @@ class fsvViewer:
         with subprocess.Popen(
             DU_COMMAND.split(), stdout=subprocess.PIPE, close_fds=True, text=True
         ) as du:
-            self._parent_dir = self.create_tree(du.stdout, sys.argv[1])
+            self._parent_dir = self.create_tree(du.stdout, d)
         maxyx = self._mainwin.getmaxyx()
         win = self._mainwin.derwin(maxyx[0] - 1, maxyx[1], 0, 0)
         win.bkgdset(" ", curses.color_pair(0))
@@ -476,19 +474,24 @@ parser.add_option(
 
 
 def main():
-    # set usage
-    (options, args) = parser.parse_args()
-    if len(args) != 1:
+    options, args = parser.parse_args()
+
+    if len(args) > 1:
         parser.print_usage()
         sys.exit(1)
-    if not os.path.isdir(args[0]):
-        print("invalid directory: " + args[0])
+
+    directory = args[0] if args else os.getcwd()
+
+    if not os.path.isdir(directory):
+        print("invalid directory:", directory)
         sys.exit(1)
 
     try:
-        curses.wrapper(fsvViewer, args[0], options.draw_frames)
-    except fsvError:
-        print(str(sys.exc_info()[1]))
+        curses.wrapper(fsvViewer, directory, options.draw_frames)
+    except KeyboardInterrupt:
+        return
+    except fsvError as e:
+        print(e)
         sys.exit(2)
 
 
