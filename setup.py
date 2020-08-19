@@ -7,7 +7,7 @@ def main():
 
     setuptools.setup(
         name="filesizeview",
-        version="0.0.2",
+        version="0.0.3",
         description="Graphical display of file sizes on terminal",
         long_description=long_description,
         long_description_content_type="text/markdown",

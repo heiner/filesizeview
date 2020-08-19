@@ -12,12 +12,20 @@ import subprocess
 import sys
 
 
-DU_COMMAND = "du -ab"
+DU_COMMAND = "du -a -B1"
+BLOCKSIZE = 1
 
 if sys.platform == "darwin":
-    # Default `du` on MacOS doesn't have the -b option.
-    # Use GNU du (gdu) instead.
-    DU_COMMAND = "g" + DU_COMMAND
+    # Default `du` on MacOS doesn't have the -B option.
+    try:
+        # See if GNU du (gdu) is installed.
+        subprocess.call(["gdu", "--version"], stdout=subprocess.PIPE)
+    except OSError:
+        # gdu is not installed. Use built-in du with its 512 byte blocks.
+        DU_COMMAND = "du -a"
+        BLOCKSIZE = 512
+    else:
+        DU_COMMAND = "g" + DU_COMMAND
 
 
 def increase_n_highest(numbers, n):
@@ -422,7 +430,7 @@ class fsvViewer:
         last_path = ["."]
         for line in sizefile:
             p = line.find("\t")
-            size = int(line[:p])
+            size = int(line[:p]) * BLOCKSIZE
             path = line[p:].strip()
             path = path.split(os.path.sep)
             len_path = len(path)
