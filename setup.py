@@ -7,12 +7,15 @@ def main():
 
     setuptools.setup(
         name="filesizeview",
-        version="0.0.3",
+        version="0.0.5",
         description="Graphical display of file sizes on terminal",
         long_description=long_description,
         long_description_content_type="text/markdown",
-        entry_points={"console_scripts": ["filesizeview = filesizeview.py",]},
-        packages=[],
+        entry_points={
+            "console_scripts": ["filesizeview=filesizeview.filesizeview:main",]
+        },
+        packages=["filesizeview"],
+        package_dir={"filesizeview": ""},
         url="https://github.com/heiner/filesizeview",
         python_requires=">=3.0",
     )
