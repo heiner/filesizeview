@@ -4,6 +4,7 @@
 # with sizes according to the files sizes. It is supposed to work
 # like Konqueror's "File Size View", but it uses curses.
 
+import contextlib
 import curses
 import math
 import optparse
@@ -43,6 +44,22 @@ def increase_n_highest(numbers, n):
     for i, num in enumerate(numbers):
         numbers[i] = int(math.floor(num))
     return numbers
+
+
+@contextlib.contextmanager
+def get_du_sizefile():
+    if DU_COMMAND is None:
+        # Take du output from stdin. dup2 stdin to still read keyboard commands.
+        f = os.fdopen(os.dup(0), "r")
+        os.dup2(1, 0)
+        with f:
+            yield f
+    else:
+        # Normal operation.
+        with subprocess.Popen(
+                DU_COMMAND.split(), stdout=subprocess.PIPE, close_fds=True, text=True
+        ) as du:
+            yield du.stdout
 
 
 class fsvError(Exception):
@@ -363,10 +380,8 @@ class fsvViewer:
         os.chdir(d)
         self._msgwin.addstr(0, 0, "please wait while the sizes are calculated...")
         self._msgwin.refresh()
-        with subprocess.Popen(
-            DU_COMMAND.split(), stdout=subprocess.PIPE, close_fds=True, text=True
-        ) as du:
-            self._parent_dir = self.create_tree(du.stdout, d)
+        with get_du_sizefile() as sizefile:
+            self._parent_dir = self.create_tree(sizefile, d)
         maxyx = self._mainwin.getmaxyx()
         win = self._mainwin.derwin(maxyx[0] - 1, maxyx[1], 0, 0)
         win.bkgdset(" ", curses.color_pair(0))
@@ -473,6 +488,13 @@ parser.add_option(
     dest="draw_frames",
     help="draw no frames to around directories",
 )
+parser.add_option(
+    "-i",
+    "--du-from-stdin",
+    action="store_true",
+    dest="du_from_stdin",
+    help="take du input from stdin (reads $BLOCKSIZE, default %i)" % BLOCKSIZE,
+)
 
 
 def main():
@@ -487,6 +509,11 @@ def main():
     if not os.path.isdir(directory):
         print("invalid directory:", directory)
         sys.exit(1)
+
+    if options.du_from_stdin:
+        global DU_COMMAND, BLOCKSIZE
+        DU_COMMAND = None
+        BLOCKSIZE = int(os.environ.get("BLOCKSIZE", BLOCKSIZE))
 
     try:
         curses.wrapper(fsvViewer, directory, options.draw_frames)
