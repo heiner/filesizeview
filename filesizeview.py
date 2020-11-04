@@ -431,6 +431,8 @@ class fsvViewer:
             size = int(line[:p]) * BLOCKSIZE
             path = line[p:].strip()
             path = path.split(os.path.sep)
+            if not path[-1]:
+                path.pop()  # Deals with ["", ""] from splitting "/".
             len_path = len(path)
             for i in range(max(len_path, len(last_path))):
                 if i >= len_path:
@@ -446,7 +448,7 @@ class fsvViewer:
                     current_dirs = current_dirs[:i]
                     for j in range(i, len_path - 1):
                         current_dirs.append(fsvDirectory(path[j], 0))
-                    current_dirs[-1].add_file(fsvFile(path[len_path - 1], size))
+                    current_dirs[-1].add_file(fsvFile(path[-1], size))
                     break
             last_path = path
         current_dirs[0].setup()
