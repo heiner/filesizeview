@@ -57,7 +57,7 @@ def get_du_sizefile():
     else:
         # Normal operation.
         with subprocess.Popen(
-                DU_COMMAND.split(), stdout=subprocess.PIPE, close_fds=True, text=True
+            DU_COMMAND.split(), stdout=subprocess.PIPE, close_fds=True, text=True
         ) as du:
             yield du.stdout
 
