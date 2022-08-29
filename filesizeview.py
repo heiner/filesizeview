@@ -208,7 +208,7 @@ class fsvDirectory(fsvFile):
                     heights[i], widths[j - start], sum_height, sum_width
                 )
                 win.bkgdset(" ", curses.color_pair(color))
-                win.clear()
+                win.erase()
                 self._files[j].set_window(win)
                 color = self._files[j].calculate_content(color, draw_frame)
                 # win.refresh()
@@ -408,7 +408,7 @@ class fsvViewer:
     def write_path(self):
         if not self._selected_path:
             return
-        self._msgwin.clear()
+        self._msgwin.erase()
         self._msgwin.move(0, 0)
         size_str = self._selected_path[self._path_index].get_size_string()
         width = self._msgwin.getmaxyx()[1] - 2 - len(size_str)
