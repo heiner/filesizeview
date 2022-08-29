@@ -353,6 +353,11 @@ class fsvViewer:
                 if self._path_index < len(self._selected_path) - 1:
                     self._path_index += 1
                     self.write_path()
+            elif ch == ord("u"):
+                if len(self._selected_path) > 2:
+                    self.go_to_file(self._selected_path[-2])
+            elif ch == ord("\n"):
+                self.go_to_file(self._selected_path[self._path_index])
             elif ch == ord("\t"):  # Select next sibling based on msg window.
                 self.select_sibling_path()
             elif ch == curses.KEY_UP or ch == ord("k"):
@@ -417,14 +422,18 @@ class fsvViewer:
         if len(path) == 1:
             if not path[0].files:
                 return
-            win = path[0].files[0].window
-        else:
-            directory, curfile = path[-2:]
-            index = directory.files.index(curfile)
-            index += 1
-            index %= len(directory.files)
-            win = directory.files[index].window
-        y, x = win.getbegyx()
+            return self.go_to_file(path[0].files[0])
+
+        directory, curfile = path[-2:]
+        index = directory.files.index(curfile)
+        index += 1
+        index %= len(directory.files)
+        self.go_to_file(directory.files[index])
+
+    def go_to_file(self, f):
+        if not f:
+            return
+        y, x = f.window.getbegyx()
         self.set_cursor(y, x)
 
     def write_path(self):
