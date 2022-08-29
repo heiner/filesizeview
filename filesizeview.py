@@ -85,6 +85,10 @@ class fsvFile:
     def set_window(self, window):
         self._window = window
 
+    @property
+    def window(self):
+        return self._window
+
     def setup(self):
         pass
 
@@ -149,6 +153,10 @@ class fsvDirectory(fsvFile):
 
     def setup(self):
         self._files.sort(key=lambda f: f.size(), reverse=True)
+
+    @property
+    def files(self):
+        return self._files
 
     def calculate_content(self, color, draw_frame=True):
         if draw_frame:
@@ -262,9 +270,6 @@ class fsvParentDirectory(fsvDirectory):
     def name(self):
         return os.path.realpath(self._name) + os.path.sep
 
-    def window(self):
-        return self._window
-
     def write_name(self):
         name_str = self.name()
         len_name = len(name_str)
@@ -318,7 +323,7 @@ class fsvViewer:
         self.set_cursor(0, 0)
         while True:
             ch = self._mainwin.getch()
-            if ch == ord("q"):
+            if ch == ord("q"):  # Quit.
                 break
             elif ch == ord("f"):
                 self._mainwin.clear()
@@ -340,14 +345,16 @@ class fsvViewer:
                 self._path_index = 0
                 self.set_cursor(0, 0)
                 self.write_path()
-            elif ch == ord("d"):
+            elif ch == ord("d"):  # Go "up" in msg window.
                 if self._path_index > 0:
                     self._path_index -= 1
                     self.write_path()
-            elif ch == ord("e"):
+            elif ch == ord("e"):  # Go "down" in msg window.
                 if self._path_index < len(self._selected_path) - 1:
                     self._path_index += 1
                     self.write_path()
+            elif ch == ord("\t"):  # Select next sibling based on msg window.
+                self.select_sibling_path()
             elif ch == curses.KEY_UP or ch == ord("k"):
                 y, x = self._mainwin.getyx()
                 if y > 0:
@@ -404,6 +411,21 @@ class fsvViewer:
         self._path_index = len(self._selected_path) - 1
         self.write_path()
         self._mainwin.move(y, x)
+
+    def select_sibling_path(self):
+        path = self._selected_path[: self._path_index + 1]
+        if len(path) == 1:
+            if not path[0].files:
+                return
+            win = path[0].files[0].window
+        else:
+            directory, curfile = path[-2:]
+            index = directory.files.index(curfile)
+            index += 1
+            index %= len(directory.files)
+            win = directory.files[index].window
+        y, x = win.getbegyx()
+        self.set_cursor(y, x)
 
     def write_path(self):
         if not self._selected_path:
