@@ -115,14 +115,13 @@ class fsvFile:
 
     def get_size_string(self):
         s = float(self._size)
-        units = "BKMGTPE"
-        c = 0
-        while s > 1024:
+        for unit in "BKMGTPE":
+            if s <= 1024:
+                break
             s /= 1024
-            c += 1
         if s < 10:
-            return "%.1f" % s + units[c]
-        return "%.0f" % s + units[c]
+            return "%.1f%s" % (s, unit)
+        return "%.0f%s" % (s, unit)
 
     def get_path(self, y, x):
         if not self.contains_point(y, x):
