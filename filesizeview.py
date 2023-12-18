@@ -109,16 +109,13 @@ class fsvFile:
         if self._window:
             begyx = self._window.getbegyx()
             maxyx = self._window.getmaxyx()
-            if (
-                begyx[0] <= y < begyx[0] + maxyx[0]
-                and begyx[1] <= x < begyx[1] + maxyx[1]
-            ):
+            if begyx[0] <= y < begyx[0] + maxyx[0] and begyx[1] <= x < begyx[1] + maxyx[1]:
                 return True
         return False
 
     def get_size_string(self):
         s = float(self._size)
-        units = "BKMGT"
+        units = "BKMGTPE"
         c = 0
         while s > 1024:
             s /= 1024
@@ -175,9 +172,7 @@ class fsvDirectory(fsvFile):
         size_sum = 0.0
         for i, f in enumerate(self._files):
             new_size_sum = size_sum + size_fac * f.size()
-            new_difference = abs(
-                new_size_sum / w_width - w_width / (i + 1 - current_indices[0])
-            )
+            new_difference = abs(new_size_sum / w_width - w_width / (i + 1 - current_indices[0]))
             if new_difference > difference:
                 exact_heights.append(size_sum / w_width)
                 indices.append(current_indices)
@@ -212,9 +207,7 @@ class fsvDirectory(fsvFile):
                 color += 1
                 if color > 7:
                     color = 1
-                win = self._window.derwin(
-                    heights[i], widths[j - start], sum_height, sum_width
-                )
+                win = self._window.derwin(heights[i], widths[j - start], sum_height, sum_width)
                 win.bkgdset(" ", curses.color_pair(color))
                 win.erase()
                 self._files[j].set_window(win)
@@ -277,9 +270,7 @@ class fsvParentDirectory(fsvDirectory):
         len_size = len(size_str)
         maxy, maxx = self._window.getmaxyx()
         if maxx > len_name + len_size:
-            self._window.insstr(
-                0, 0, name_str + " " * (maxx - len_name - len_size) + size_str
-            )
+            self._window.insstr(0, 0, name_str + " " * (maxx - len_name - len_size) + size_str)
         else:
             self._window.insstr(0, 0, name_str)
 
@@ -501,9 +492,7 @@ class fsvViewer:
         return current_dirs[0]
 
 
-parser = optparse.OptionParser(
-    usage="usage: %prog [options] <directory>", version="%proc 0.9"
-)
+parser = optparse.OptionParser(usage="usage: %prog [options] <directory>", version="%proc 0.9")
 parser.add_option(
     "-f",
     "--draw-frame",
